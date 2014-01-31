@@ -1,22 +1,28 @@
 include <metric.scad>
 
-boxMountHoleSpacing = 103.5;
-boxInsideWidth = 113;
+boxMountHoleSpacing = 104;
+boxInsideWidth = 115;
 boxWidthGap = 0.5;
+boxHoleDiameter = 4;
 
-boardMountingHoleFromBox = 14;  //The distance from the closest board mounting hole to the inside of th e box
+boardMountingHoleFromBox = 15;  //The distance from the closest board mounting hole to the inside of th e box
 
 boardMountingHoleSpacing = 68.7;
-boxHoleLongSpacing = 134.3;
+boxHoleLongSpacing = 133.6;
 boardHoleLongSpacing = 125.16;
 boardHoleOffsetFromBoxHoles = (boxHoleLongSpacing-boardHoleLongSpacing)/2;
 
-reinforceThickness = 3.5;
+reinforceThickness = 2.8;
 width = 10+reinforceThickness;
 height = 9;
 thickness = 2.5;
 nutRetainerOuterAcross = 10/cos(30);
-radius = 1.5;
+radius = 3;
+supportGap = 2;
+
+//Extra support for the center bolt provided by touching bottom of box
+centralSupportLen = 20;
+centralSupportExtraHeight = 3;
 
 numHoleSegs = 32;
 
@@ -30,6 +36,7 @@ module GNSMount(inputEnd = 0)
 {
 length = boxInsideWidth-2*boxWidthGap;
 boardMountCenterX = -length/2 + boardMountingHoleFromBox - boxWidthGap + boardMountingHoleSpacing/2;
+
 difference()
 	{
 	union()
@@ -40,18 +47,27 @@ difference()
 				cube([length-2*radius,width-2*radius,thickness]);
 				cylinder(h = thickness/10000, r = radius, $fn = numHoleSegs);
 				}
-		translate([-length/2+radius,0,0])
+		translate([-length/2+supportGap,0,0])
 			hull()
 				{
 				translate([height,0,0])
-	   	   	cube([length-2*height,reinforceThickness,height]);
-	   	   cube([length-2*radius,reinforceThickness,height/10]);
+	   	   	cube([length-2*supportGap-2*height,reinforceThickness,height]);
+	   	   cube([length-2*supportGap,reinforceThickness,height/10]);
 				}
 	   if(inputEnd == 1)
 			{
 	//Center Board mount nut retainer
 			translate([boardMountCenterX, centerBoardHoleCenterY, 0])
-				NutRetainerPos();
+				NutRetainerPos();			
+			
+			translate([boardMountCenterX-centralSupportLen/2,0,height])
+				hull()
+					{
+					translate([centralSupportExtraHeight,0,0])
+		   	   	cube([centralSupportLen-2*centralSupportExtraHeight,reinforceThickness,centralSupportExtraHeight]);
+		   	   cube([centralSupportLen,reinforceThickness,centralSupportExtraHeight/10]);
+					}
+
 			}
 	   else
 			{//Output end
@@ -90,9 +106,9 @@ difference()
          }
 //Box mount holes
 	translate([-boxMountHoleSpacing/2, boxHolesCenterY, -thickness/2])
-	   cylinder(h = thickness*2, r = m3_diameter/2, $fn = numHoleSegs);
+	   cylinder(h = thickness*2, r = boxHoleDiameter/2, $fn = numHoleSegs);
 	translate([+boxMountHoleSpacing/2, boxHolesCenterY, -thickness/2])
-	   cylinder(h = thickness*2, r = m3_diameter/2, $fn = numHoleSegs);
+	   cylinder(h = thickness*2, r = boxHoleDiameter/2, $fn = numHoleSegs);
 	}
 }
 
@@ -110,7 +126,7 @@ module NutRetainerPos(retainerH = 4)
 module NutRetainerNeg(retainerH = 4)
 {
 	   translate([0, 0, thickness])
-			cylinder(h =height, r = m3_nut_diameter_horizontal/2, $fn = 6);
+			cylinder(h = height+centralSupportExtraHeight, r = m3_nut_diameter_horizontal/2, $fn = 6);
 
 }
 
