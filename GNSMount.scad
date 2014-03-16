@@ -148,15 +148,17 @@ module NutRetainerNeg(retainerH = 4)
 
 //Standoff parameters
 boardH = 1.9;
+clipW = 8;
+reinforceHoleDia = 1.5;
 
-module Standoff(hasNutRetainer = 1, retainerH = 6.5, separatorH = 19.1, sepDiameter = 8,clipTopLen = 4.6,clipW = 8,holeDia = 3.2,holeToEdge = 3.0,joinW = 4)
+module Standoff(hasNutRetainer = 1, retainerH = 6.5, separatorH = 19.1, sepDiameter = 8,clipTopLen = 4.6,holeDia = 3.2,holeToEdge = 3.0,joinW = 4)
 {
 holeCenterToEdge = holeDia/2+holeToEdge;
 nutToBoard = 2.5;
 supportFlat = 1;
 retainerConeH = 1;
 nutRadiusExtra = 0.15;
-holeRadius = m3_diameter/2+0.2;
+holeRadius = m3_diameter/2+(hasNutRetainer ? 0.2 : 0.1);
 clipLen = clipTopLen + joinW;
 translate([0,0,boardH+retainerH])
 difference()
@@ -165,20 +167,30 @@ difference()
 		{
 		//hull()
 			{
-			cylinder(h = separatorH, r = sepDiameter/2, $fn = 6);
+			//Above the board separator piece
+			if(hasNutRetainer == 1)
+				cylinder(h = separatorH, r = sepDiameter/2, $fn = 6);
+			else
+				{
+				translate([-clipW/2,-clipW/2,separatorH-thickness])
+					cube([clipW,clipW,thickness]);
+				rotate([0,0,30])
+					cylinder(h = separatorH, r = sepDiameter/2/cos(30), $fn = 6);
+				}
+
 			//translate([-supportFlat/2,-joinW-holeCenterToEdge,0])
 			//	cube([supportFlat,clipLen,separatorH]);
 			}
-		
+//Clip body		
 		translate([-clipW/2,-joinW-holeCenterToEdge,-retainerH-boardH])
 			cube([clipW,clipLen,retainerH+boardH+thickness]);
-		
+//Nut retainer body		
 			translate([0,0,-retainerH-boardH])
 				//rotate([0,0,30])
 					if(hasNutRetainer == 1)
-				   	cylinder(h =retainerH, r = (nutRetainerOuterAcross-0.6)/2, $fn = 6);
+				   	cylinder(h =retainerH, r = (nutRetainerOuterAcross-1.1)/2, $fn = 6);
 					else
-				   	cylinder(h =retainerH, r = (sepDiameter)/2, $fn = 24);
+			   		cylinder(h =retainerH, r = (sepDiameter)/2, $fn = 24);
 
 //	   translate([11, 0, -retainerConeH-boardH-nutToBoard])
 //			//rotate([0,0,30])
@@ -195,35 +207,68 @@ difference()
 				cylinder(h = separatorH*2, r = holeRadius, $fn = 16);
 		if(hasNutRetainer == 1)
 			{
+//Cone at top of nut retainer hole
 		   translate([0, 0, -retainerConeH-nutToBoard-boardH-0.1])
 				//rotate([0,0,30])
 					cylinder(h = retainerConeH, r2 = holeRadius,r1 = m3_nut_diameter_horizontal/2+nutRadiusExtra, $fn = 6);
+//Nut retainer hole
 		   translate([0, 0, -retainerH-nutToBoard-boardH-retainerConeH])
 				//rotate([0,0,30])
 					cylinder(h = retainerH, r = m3_nut_diameter_horizontal/2+nutRadiusExtra, $fn = 6);
+//reinforcing holes
+		   translate([-clipW/6, -joinW/2-holeCenterToEdge, -1.5*boardH])
+					cylinder(h = boardH*2, r = reinforceHoleDia/2, $fn = 6);
+		   translate([clipW/6, -joinW/2-holeCenterToEdge, -1.5*boardH])
+					cylinder(h = boardH*2, r = reinforceHoleDia/2, $fn = 6);
 			}
 		}
 	}
 
 }
 
-//rotate([90,0,0])
-//	Standoff();
-
-spacing = 20;
+spacing =20;
 halfSpacing = spacing/2;
+
+spacingY= 30;
+spacingX = 30;
+halfSpacingY = spacingY/2;
+
+//bolt standoffs on side with 30% fan on perimeters and no support
+//translate([0,0,clipW/2])
+//	{
+//	translate([halfSpacing,halfSpacingY,0])
+//		rotate([90,90,0])
+//			Standoff(hasNutRetainer = 0, retainerH = 2.5);
+//	translate([-halfSpacing,halfSpacingY,0])
+//		rotate([90,90,0])
+//			Standoff(hasNutRetainer = 0, retainerH = 2.5);
+//	translate([halfSpacing,-halfSpacingY,0])
+//		rotate([90,90,0])
+//			Standoff(hasNutRetainer = 0, retainerH = 2.5);
+//	translate([-halfSpacing,-halfSpacingY,0])
+//		rotate([90,90,0])
+//			Standoff(hasNutRetainer = 0, retainerH = 2.5);
+//	}
+
+//Standoff();
 
 translate([-7,0,0])
 	{
+//nut standoffs upright with support
 	translate([halfSpacing,halfSpacing,0])
 		Standoff();
 	translate([-halfSpacing,halfSpacing,0])
 		Standoff();
+//	translate([halfSpacing,-halfSpacing,0])
+//		Standoff();
+//	translate([-halfSpacing,-halfSpacing,0])
+//		Standoff();
 
-	translate([halfSpacing,-halfSpacing,0])
-		Standoff(hasNutRetainer = 0, retainerH = 2.5);
-	translate([-halfSpacing,-halfSpacing,0])
-		Standoff(hasNutRetainer = 0, retainerH = 2.5);
+//bolt standoffs upright with support
+//	translate([halfSpacing,-halfSpacing,0])
+//		Standoff(hasNutRetainer = 0, retainerH = 2.5);
+//	translate([-halfSpacing,-halfSpacing,0])
+//		Standoff(hasNutRetainer = 0, retainerH = 2.5);
 	}
 
 
