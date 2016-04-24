@@ -5,6 +5,11 @@ boxInsideWidth = 114.5;
 boxWidthGap = 0.5;
 boxHoleDiameter = 4;
 
+RL45Tol = 6;
+RJ45mountDia = 28+RL45Tol;
+RJ45mountFromBoxBottom = 5;
+RJ45mountOverLapHorizontal = 3;
+
 boardMountingHoleFromBox = 15;  //The distance from the closest board mounting hole to the inside of th e box
 
 boardMountingHoleSpacing = 68.7;
@@ -82,7 +87,6 @@ difference()
 		   	   	cube([centralSupportLen-2*centralSupportExtraHeight,reinforceThickness,centralSupportExtraHeight]);
 		   	   cube([centralSupportLen,reinforceThickness,centralSupportExtraHeight/10]);
 					}
-
 			}
 	   else
 			{//Output end
@@ -110,6 +114,12 @@ difference()
 		//Center Board mount hole
 			translate([boardMountCenterX, centerBoardHoleCenterY, -thickness/2])
 			   cylinder(h = thickness*2, r = m3_diameter/2, $fn = numHoleSegs);
+          //RJ45 mount clearance
+			translate([-boxMountHoleSpacing/4, width, -RJ45mountDia/2+height-RJ45mountFromBoxBottom])
+			   rotate([90,0,0]) cylinder(h = RJ45mountOverLapHorizontal, d = RJ45mountDia, $fn = 64);
+			translate([boxMountHoleSpacing/4, width, -RJ45mountDia/2+height-RJ45mountFromBoxBottom])
+			   rotate([90,0,0]) cylinder(h = RJ45mountOverLapHorizontal, d = RJ45mountDia, $fn = 64);
+
          }
       else
          {
@@ -255,10 +265,10 @@ halfSpacingY = spacingY/2;
 translate([-7,0,0])
 	{
 //nut standoffs upright with support
-	translate([halfSpacing,halfSpacing,0])
-		Standoff();
-	translate([-halfSpacing,halfSpacing,0])
-		Standoff();
+//	translate([halfSpacing,halfSpacing,0])
+//		Standoff();
+//	translate([-halfSpacing,halfSpacing,0])
+//		Standoff();
 //	translate([halfSpacing,-halfSpacing,0])
 //		Standoff();
 //	translate([-halfSpacing,-halfSpacing,0])
@@ -272,7 +282,7 @@ translate([-7,0,0])
 	}
 
 
-//GNSMount(inputEnd = 1);
+GNSMount(inputEnd = 1);
 //
 //translate([0,30,0])
 //   mirror([0,1,0])
